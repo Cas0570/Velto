@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TopNavigation } from "@/components/TopNavigation";
 import { CreateRequestForm } from "@/components/CreateRequestForm";
 import { VeltoCard } from "@/components/VeltoCard";
@@ -6,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Copy, Share2, QrCode, CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { CreateRequestProps } from "@/types";
 
 // Mock user
 const mockUser = {
@@ -15,7 +15,8 @@ const mockUser = {
   avatar: undefined,
 };
 
-export const CreateRequest = ({ onBack }: CreateRequestProps) => {
+export const CreateRequest = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState<"form" | "success">("form");
   const [loading, setLoading] = useState(false);
   const [paymentLink, setPaymentLink] = useState("");
@@ -59,6 +60,10 @@ export const CreateRequest = ({ onBack }: CreateRequestProps) => {
     }
   };
 
+  const handleBackToDashboard = () => {
+    navigate("/dashboard");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <TopNavigation user={mockUser} />
@@ -66,7 +71,11 @@ export const CreateRequest = ({ onBack }: CreateRequestProps) => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Button variant="ghost" onClick={onBack} className="mb-4">
+          <Button
+            variant="ghost"
+            onClick={handleBackToDashboard}
+            className="mb-4"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
@@ -195,7 +204,11 @@ export const CreateRequest = ({ onBack }: CreateRequestProps) => {
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="outline" onClick={onBack} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={handleBackToDashboard}
+                className="flex-1"
+              >
                 View Dashboard
               </Button>
               <Button

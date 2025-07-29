@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TopNavigation } from "@/components/TopNavigation";
 import { PaymentRequestCard } from "@/components/PaymentRequestCard";
 import { Button } from "@/components/ui/button";
 import { VeltoCard } from "@/components/VeltoCard";
 import { Plus, Search, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { DashboardProps, PaymentStatus } from "@/types";
+import { PaymentStatus } from "@/types";
 
 // Mock data
 const mockUser = {
@@ -62,11 +62,9 @@ const mockRequests = [
   },
 ];
 
-export const Dashboard = ({
-  onCreateRequest,
-  onSearch,
-  onViewDetails,
-}: DashboardProps) => {
+export const Dashboard = () => {
+  const navigate = useNavigate();
+
   const stats = {
     total: mockRequests.reduce((sum, req) => sum + req.amount, 0),
     paid: mockRequests
@@ -75,9 +73,21 @@ export const Dashboard = ({
     pending: mockRequests.filter((req) => req.status === "pending").length,
   };
 
+  const handleCreateRequest = () => {
+    navigate("/create");
+  };
+
+  const handleSearch = () => {
+    navigate("/search");
+  };
+
+  const handleViewDetails = (requestId: string) => {
+    navigate(`/request/${requestId}`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <TopNavigation user={mockUser} onSearch={onSearch} />
+      <TopNavigation user={mockUser} onSearch={handleSearch} />
 
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Header */}
@@ -91,7 +101,7 @@ export const Dashboard = ({
             </p>
           </div>
           <Button
-            onClick={onCreateRequest}
+            onClick={handleCreateRequest}
             variant="gradient"
             size="lg"
             className="self-stretch sm:self-auto"
@@ -156,7 +166,7 @@ export const Dashboard = ({
                     navigator.clipboard.writeText(link);
                     // Toast notification would go here
                   }}
-                  onCardClick={() => onViewDetails?.(request.id)}
+                  onCardClick={() => handleViewDetails(request.id)}
                 />
               ))}
             </div>
@@ -175,7 +185,7 @@ export const Dashboard = ({
                   </p>
                 </div>
                 <Button
-                  onClick={onCreateRequest}
+                  onClick={handleCreateRequest}
                   variant="gradient"
                   className="mx-auto"
                 >

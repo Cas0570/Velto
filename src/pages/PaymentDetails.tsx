@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { TopNavigation } from "@/components/TopNavigation";
 import { VeltoCard } from "@/components/VeltoCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/accordion";
 import { ArrowLeft, Share2, QrCode, Trash2, Copy } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { PaymentDetailsProps, PaymentStatus } from "@/types";
+import { PaymentStatus } from "@/types";
 
 // Mock data
 const mockUser = {
@@ -55,10 +56,13 @@ const mockRequestDetails = {
   ],
 };
 
-export const PaymentDetails = ({ requestId, onBack }: PaymentDetailsProps) => {
+export const PaymentDetails = () => {
+  const { id: requestId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [showQR, setShowQR] = useState(false);
 
-  const request = mockRequestDetails; // In real app, fetch by requestId
+  // In real app, you would fetch the request by requestId
+  const request = mockRequestDetails;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("nl-NL", {
@@ -106,7 +110,27 @@ export const PaymentDetails = ({ requestId, onBack }: PaymentDetailsProps) => {
   const handleDelete = () => {
     // Delete functionality would go here
     console.log("Delete request:", request.id);
+    // After deletion, navigate back to dashboard
+    navigate("/dashboard");
   };
+
+  const handleBack = () => {
+    navigate("/dashboard");
+  };
+
+  // If request not found (in real app)
+  if (!requestId) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <VeltoCard className="text-center py-12">
+          <p className="text-lg font-medium text-foreground mb-4">
+            Request not found
+          </p>
+          <Button onClick={handleBack}>Back to Dashboard</Button>
+        </VeltoCard>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -118,7 +142,7 @@ export const PaymentDetails = ({ requestId, onBack }: PaymentDetailsProps) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={onBack}
+            onClick={handleBack}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />

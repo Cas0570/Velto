@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TopNavigation } from "@/components/TopNavigation";
 import { PaymentRequestCard } from "@/components/PaymentRequestCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { VeltoCard } from "@/components/VeltoCard";
 import { Search as SearchIcon, ArrowLeft } from "lucide-react";
-import { SearchProps, PaymentStatus } from "@/types";
+import { PaymentStatus } from "@/types";
 
 // Mock data (same as Dashboard)
 const mockUser = {
@@ -62,7 +63,8 @@ const mockRequests = [
   },
 ];
 
-export const Search = ({ onBack, onViewDetails }: SearchProps) => {
+export const Search = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | PaymentStatus>(
     "all"
@@ -77,6 +79,14 @@ export const Search = ({ onBack, onViewDetails }: SearchProps) => {
     return matchesSearch && matchesStatus;
   });
 
+  const handleBack = () => {
+    navigate("/dashboard");
+  };
+
+  const handleViewDetails = (requestId: string) => {
+    navigate(`/request/${requestId}`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <TopNavigation user={mockUser} />
@@ -87,7 +97,7 @@ export const Search = ({ onBack, onViewDetails }: SearchProps) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={onBack}
+            onClick={handleBack}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -144,38 +154,39 @@ export const Search = ({ onBack, onViewDetails }: SearchProps) => {
         </div>
 
         {/* Results */}
-        <div className="space-y-4"></div>
-        {filteredRequests.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4">
-            {filteredRequests.map((request) => (
-              <PaymentRequestCard
-                key={request.id}
-                request={request}
-                onCopy={(link) => {
-                  navigator.clipboard.writeText(link);
-                  // Toast notification would go here
-                }}
-                onCardClick={() => onViewDetails(request.id)}
-              />
-            ))}
-          </div>
-        ) : (
-          <VeltoCard hover={false} className="text-center py-12">
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                <SearchIcon className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-lg font-medium text-foreground">
-                  No results found
-                </p>
-                <p className="text-muted-foreground">
-                  Try searching with different keywords
-                </p>
-              </div>
+        <div className="space-y-4">
+          {filteredRequests.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              {filteredRequests.map((request) => (
+                <PaymentRequestCard
+                  key={request.id}
+                  request={request}
+                  onCopy={(link) => {
+                    navigator.clipboard.writeText(link);
+                    // Toast notification would go here
+                  }}
+                  onCardClick={() => handleViewDetails(request.id)}
+                />
+              ))}
             </div>
-          </VeltoCard>
-        )}
+          ) : (
+            <VeltoCard hover={false} className="text-center py-12">
+              <div className="space-y-4">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+                  <SearchIcon className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-lg font-medium text-foreground">
+                    No results found
+                  </p>
+                  <p className="text-muted-foreground">
+                    Try searching with different keywords
+                  </p>
+                </div>
+              </div>
+            </VeltoCard>
+          )}
+        </div>
       </div>
     </div>
   );

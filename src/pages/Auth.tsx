@@ -1,24 +1,36 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { VeltoLogo } from "@/components/VeltoLogo";
 import { VeltoCard } from "@/components/VeltoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, ArrowRight, Zap } from "lucide-react";
-import { AuthProps } from "@/types";
+import { useAuth } from "../App";
 
-export const Auth = ({ onLogin, onSignUp, loading }: AuthProps) => {
+export const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { login, signup, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      onLogin?.(email, password);
-    } else {
-      onSignUp?.(email, password, name);
+
+    try {
+      if (isLogin) {
+        await login(email, password);
+      } else {
+        await signup(email, password, name);
+      }
+      // Navigation will be handled by the ProtectedRoute logic
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Authentication error:", error);
+      // Here you would show an error toast/message
     }
   };
 
