@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { TopNavigation } from "@/components/TopNavigation";
 import { PaymentRequestCard } from "@/components/PaymentRequestCard";
 import { Button } from "@/components/ui/button";
@@ -7,13 +8,7 @@ import { Plus, Search, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { PaymentStatus } from "@/types";
 
-// Mock data
-const mockUser = {
-  name: "John Doe",
-  email: "john@example.com",
-  avatar: undefined,
-};
-
+// Mock requests data (replace with real API calls later)
 const mockRequests = [
   {
     id: "1",
@@ -64,6 +59,7 @@ const mockRequests = [
 
 export const Dashboard = () => {
   const navigate = useNavigate();
+  const { user, isLoaded } = useUser();
 
   const stats = {
     total: mockRequests.reduce((sum, req) => sum + req.amount, 0),
@@ -85,16 +81,27 @@ export const Dashboard = () => {
     navigate(`/request/${requestId}`);
   };
 
+  // Show loading state while user data is loading
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const userName = user?.firstName || user?.fullName?.split(" ")[0] || "there";
+
   return (
     <div className="min-h-screen bg-background">
-      <TopNavigation user={mockUser} onSearch={handleSearch} />
+      <TopNavigation onSearch={handleSearch} />
 
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              Welcome back, {mockUser.name.split(" ")[0]}!
+              Welcome back, {userName}! 👋
             </h1>
             <p className="text-muted-foreground mt-1">
               Manage your payment requests and track your earnings
@@ -150,13 +157,42 @@ export const Dashboard = () => {
           </VeltoCard>
         </div>
 
-        {/* Payment Requests */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">
-            Your Payment Requests
-          </h2>
+        {/* Welcome message for new users */}
+        {mockRequests.length === 0 && (
+          <VeltoCard hover={false} className="text-center py-12">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                <Plus className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <p className="text-xl font-semibold text-foreground mb-2">
+                  Welcome to Velto! 🎉
+                </p>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  You're all set up! Create your first payment request to start
+                  receiving payments in seconds.
+                </p>
+              </div>
+              <Button
+                onClick={handleCreateRequest}
+                variant="gradient"
+                size="lg"
+                className="mx-auto"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Request
+              </Button>
+            </div>
+          </VeltoCard>
+        )}
 
-          {mockRequests.length > 0 ? (
+        {/* Payment Requests */}
+        {mockRequests.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-foreground">
+              Your Payment Requests
+            </h2>
+
             <div className="grid grid-cols-1 gap-4">
               {mockRequests.map((request) => (
                 <PaymentRequestCard
@@ -164,38 +200,14 @@ export const Dashboard = () => {
                   request={request}
                   onCopy={(link) => {
                     navigator.clipboard.writeText(link);
-                    // Toast notification would go here
+                    // TODO: Add toast notification
                   }}
                   onCardClick={() => handleViewDetails(request.id)}
                 />
               ))}
             </div>
-          ) : (
-            <VeltoCard hover={false} className="text-center py-12">
-              <div className="space-y-4">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                  <Search className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-lg font-medium text-foreground">
-                    No requests found
-                  </p>
-                  <p className="text-muted-foreground">
-                    Create your first payment request to get started
-                  </p>
-                </div>
-                <Button
-                  onClick={handleCreateRequest}
-                  variant="gradient"
-                  className="mx-auto"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Request
-                </Button>
-              </div>
-            </VeltoCard>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

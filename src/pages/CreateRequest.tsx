@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Copy, Share2, QrCode, CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useUser } from "@clerk/clerk-react";
 
 // Mock user
 const mockUser = {
@@ -17,6 +18,7 @@ const mockUser = {
 
 export const CreateRequest = () => {
   const navigate = useNavigate();
+  const { user, isLoaded } = useUser();
   const [step, setStep] = useState<"form" | "success">("form");
   const [loading, setLoading] = useState(false);
   const [paymentLink, setPaymentLink] = useState("");
@@ -64,9 +66,13 @@ export const CreateRequest = () => {
     navigate("/dashboard");
   };
 
+  const handleSearch = () => {
+    navigate("/search");
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <TopNavigation user={mockUser} />
+      <TopNavigation onSearch={handleSearch} />
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}

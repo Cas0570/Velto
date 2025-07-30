@@ -1,36 +1,79 @@
 import { useState } from "react";
+import { useSignIn, useSignUp } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { VeltoLogo } from "@/components/VeltoLogo";
 import { VeltoCard } from "@/components/VeltoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, ArrowRight, Zap } from "lucide-react";
-import { useAuth } from "../App";
+import { Mail, Lock, ArrowRight, Zap, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+interface AuthProps {
+  mode?: "sign-in" | "sign-up";
+}
+
+export const Auth = ({ mode = "sign-in" }: AuthProps) => {
+  const [isLogin, setIsLogin] = useState(mode === "sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const { login, signup, loading } = useAuth();
+  const { signIn, setActive } = useSignIn();
+  const { signUp, setActive: setActiveSignUp } = useSignUp();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
       if (isLogin) {
-        await login(email, password);
+        // Sign In Logic
+        const result = await signIn?.create({
+          identifier: email,
+          password,
+        });
+
+        if (result?.status === "complete") {
+          await setActive({ session: result.createdSessionId });
+          navigate("/dashboard");
+        }
       } else {
-        await signup(email, password, name);
+        // Sign Up Logic
+        const result = await signUp?.create({
+          emailAddress: email,
+          password,
+          firstName: name.split(" ")[0],
+          lastName: name.split(" ").slice(1).join(" ") || undefined,
+        });
+
+        if (result?.status === "complete") {
+          await setActiveSignUp({ session: result.createdSessionId });
+          navigate("/dashboard");
+        } else if (result?.status === "missing_requirements") {
+          // Handle email verification if required
+          setError("Please check your email to verify your account.");
+        }
       }
-      // Navigation will be handled by the ProtectedRoute logic
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Authentication error:", error);
-      // Here you would show an error toast/message
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error("Authentication error:", err);
+
+      // Handle specific Clerk errors
+      if (err.errors) {
+        const errorMessage = err.errors[0]?.message || "An error occurred";
+        setError(errorMessage);
+      } else {
+        setError(
+          isLogin ? "Invalid email or password" : "Failed to create account"
+        );
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,6 +145,14 @@ export const Auth = () => {
                 </p>
               </div>
 
+              {/* Error Alert */}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 {!isLogin && (
                   <div className="space-y-2">
@@ -113,6 +164,7 @@ export const Auth = () => {
                       onChange={(e) => setName(e.target.value)}
                       className="h-11 rounded-xl"
                       required={!isLogin}
+                      disabled={loading}
                     />
                   </div>
                 )}
@@ -127,6 +179,7 @@ export const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="h-11 rounded-xl"
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -140,7 +193,13 @@ export const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-11 rounded-xl"
                     required
+                    disabled={loading}
                   />
+                  {!isLogin && (
+                    <p className="text-xs text-muted-foreground">
+                      Password must be at least 8 characters long
+                    </p>
+                  )}
                 </div>
 
                 <Button
@@ -171,8 +230,18 @@ export const Auth = () => {
                     : "Already have an account? "}
                   <button
                     type="button"
-                    onClick={() => setIsLogin(!isLogin)}
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setError("");
+                      // Update URL without page reload
+                      window.history.pushState(
+                        {},
+                        "",
+                        isLogin ? "/sign-up" : "/sign-in"
+                      );
+                    }}
                     className="text-primary hover:text-primary-hover font-medium transition-colors"
+                    disabled={loading}
                   >
                     {isLogin ? "Sign up" : "Sign in"}
                   </button>

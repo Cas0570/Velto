@@ -13,6 +13,7 @@ import {
 import { ArrowLeft, Share2, QrCode, Trash2, Copy } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { PaymentStatus } from "@/types";
+import { useUser } from "@clerk/clerk-react";
 
 // Mock data
 const mockUser = {
@@ -59,6 +60,7 @@ const mockRequestDetails = {
 export const PaymentDetails = () => {
   const { id: requestId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, isLoaded } = useUser();
   const [showQR, setShowQR] = useState(false);
 
   // In real app, you would fetch the request by requestId
@@ -118,6 +120,10 @@ export const PaymentDetails = () => {
     navigate("/dashboard");
   };
 
+  const handleSearch = () => {
+    navigate("/search");
+  };
+
   // If request not found (in real app)
   if (!requestId) {
     return (
@@ -134,7 +140,7 @@ export const PaymentDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopNavigation user={mockUser} />
+      <TopNavigation onSearch={handleSearch} />
 
       <div className="container mx-auto px-4 py-6 space-y-6">
         {/* Header */}

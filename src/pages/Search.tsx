@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { VeltoCard } from "@/components/VeltoCard";
 import { Search as SearchIcon, ArrowLeft } from "lucide-react";
 import { PaymentStatus } from "@/types";
+import { useUser } from "@clerk/clerk-react";
 
 // Mock data (same as Dashboard)
 const mockUser = {
@@ -65,6 +66,7 @@ const mockRequests = [
 
 export const Search = () => {
   const navigate = useNavigate();
+  const { user, isLoaded } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | PaymentStatus>(
     "all"
@@ -89,7 +91,7 @@ export const Search = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopNavigation user={mockUser} />
+      <TopNavigation />
 
       <div className="container mx-auto px-4 py-6 space-y-6">
         {/* Header */}
