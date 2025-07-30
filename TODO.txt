@@ -1,0 +1,270 @@
+Add this code again:
+
+Payment Success:
+import { useNavigate } from "react-router-dom";
+import { VeltoLogo } from "@/components/VeltoLogo";
+import { VeltoCard } from "@/components/VeltoCard";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, ArrowRight, Home, Receipt, Share2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
+
+const mockPaymentDetails = {
+  amount: 4999,
+  description: "Consulting Services",
+  payerName: "John Doe",
+  payerEmail: "john.doe@example.com",
+  paymentDate: new Date().toISOString(),
+  paymentId: "MOCKPAYMENT1234567890",
+  status: "succeeded",
+  requestId: "MOCKREQUEST12345",
+};
+
+export const PaymentSuccess = () => {
+  const navigate = useNavigate();
+  const paymentDetails = mockPaymentDetails;
+
+  const handleGoHome = () => {
+    navigate("/");
+  };
+
+  const handleShare = () => {
+    if (navigator.share && paymentDetails) {
+      navigator.share({
+        title: "Payment Completed",
+        text: `I just paid ${formatCurrency(paymentDetails.amount)} for ${
+          paymentDetails.description
+        } via Velto!`,
+        url: window.location.origin,
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b border-border/40 bg-background/95 backdrop-blur">
+        <div className="container mx-auto px-4 py-6">
+          <VeltoLogo size="md" />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto space-y-8">
+          {/* Success Animation */}
+          <div className="text-center space-y-6">
+            <div className="relative">
+              <div className="w-24 h-24 bg-success/20 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                <CheckCircle className="h-16 w-16 text-success animate-bounce" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold text-foreground">
+                Payment Successful! 🎉
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Your payment has been processed successfully
+              </p>
+            </div>
+          </div>
+
+          {/* Payment Details Card */}
+          <VeltoCard hover={false} className="p-8">
+            <div className="space-y-6">
+              {/* Amount */}
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">Amount Paid</p>
+                <p className="text-4xl font-bold text-primary">
+                  {formatCurrency(paymentDetails.amount)}
+                </p>
+              </div>
+
+              {/* Transaction Details */}
+              <div className="space-y-4 border-t border-border pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Description
+                    </p>
+                    <p className="text-foreground">
+                      {paymentDetails.description}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Payment Date
+                    </p>
+                    <p className="text-foreground">
+                      {new Date(paymentDetails.paymentDate).toLocaleDateString(
+                        "nl-NL",
+                        {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                    </p>
+                  </div>
+
+                  {paymentDetails.payerName && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        Paid By
+                      </p>
+                      <p className="text-foreground">
+                        {paymentDetails.payerName}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Transaction ID
+                    </p>
+                    <p className="text-foreground font-mono text-sm">
+                      {paymentDetails.paymentId.substring(0, 20)}...
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Email Receipt Notice */}
+              <div className="bg-muted/50 rounded-lg p-4 text-center">
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Receipt className="h-4 w-4" />
+                  <span>
+                    A receipt has been sent to{" "}
+                    {paymentDetails.payerEmail || "your email"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </VeltoCard>
+
+          {/* What's Next */}
+          <VeltoCard hover={false} className="p-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">
+                What happens next?
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle className="h-3 w-3 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      Payment Confirmed
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      The recipient has been notified of your payment
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Receipt className="h-3 w-3 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      Receipt Sent
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Check your email for the transaction receipt
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ArrowRight className="h-3 w-3 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      All Done!
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Your transaction is complete and secure
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </VeltoCard>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              onClick={handleGoHome}
+              variant="gradient"
+              className="flex-1"
+            >
+              <Home className="h-4 w-4 mr-2" />
+              Go to Velto
+            </Button>
+            <Button onClick={handleShare} variant="outline" className="flex-1">
+              <Share2 className="h-4 w-4 mr-2" />
+              Share Success
+            </Button>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center pt-8 border-t border-border">
+            <p className="text-sm text-muted-foreground">
+              Powered by{" "}
+              <span className="font-semibold text-primary">Velto</span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Questions about this payment?{" "}
+              <a
+                href="mailto:support@veltoapp.nl"
+                className="text-primary hover:underline"
+              >
+                Contact support
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+Setup Payment:
+      <VeltoCard className="p-8">
+        <div className="text-center space-y-6">
+          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+            <CreditCard className="h-8 w-8 text-primary" />
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-foreground">
+              Setup Payment Account
+            </h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              To receive payments from your payment requests, you need to
+              connect your bank account. This is secure and handled by our
+              payment provider.
+            </p>
+          </div>
+
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>What you'll need:</strong> Your bank details (IBAN), ID
+              document, and basic business information (if applicable).
+            </AlertDescription>
+          </Alert>
+
+          <Button variant="gradient" size="lg" className="w-full sm:w-auto">
+            <>
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Setup Bank Account
+            </>
+          </Button>
+        </div>
+      </VeltoCard>
